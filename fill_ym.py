@@ -17,8 +17,6 @@ def fill_ym_pandas(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_
             df_uc0 = df_new[uc0_array == uc0]
             uc1_array = df_uc0[unique_columns[1]].values
             uc1_unique = df_uc0[unique_columns[1]].unique()
-            print(df_uc0)
-            print(uc1_unique)
             df_list.append(pd.concat([df_uc0[uc1_array == uc1].asfreq('MS', fill_value=fill_value) for uc1 in uc1_unique]))
         df_flag = pd.DataFrame(dict(Filled=np.zeros(len(df_new))), index=df_new.index)
         df_new = pd.concat(df_list).join(df_flag, how='left').fillna({'Filled': 1}).astype({'Filled': int})
