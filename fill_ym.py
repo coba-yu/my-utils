@@ -22,6 +22,7 @@ def fill_ym_pandas(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_
             df_list.append(pd.concat([df_uc0[uc1_array == uc1].asfreq('MS') for uc1 in uc1_unique]))
         df_new = pd.concat(df_list)
         df_new.fillna(fill_value, inplace=True)
+        df_new[unique_columns] = df_new[unique_columns].fillna(method='ffill')
         df_new = df_new.astype({'Filled': int})
         df_new.reset_index(inplace=True)
         df_new[ym_column] = df_new[ym_column].map(lambda x: '-'.join(str(x).split('-')[:2]))
@@ -38,9 +39,9 @@ def fill_ym_numpy(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_v
 
 def fill_ym(df: pd.DataFrame, unique_columns: list, ym_column: str, base: str, fill_value=None) -> pd.DataFrame:
     if base == 'pandas':
-        df_new = fill_ym_pandas(df, ['idx', 'area'], 'ym', 0)
+        df_new = fill_ym_pandas(df, ['idx', 'area'], 'ym', fill_value)
     elif base == 'numpy':
-        df_new = fill_ym_numpy(df, ['idx', 'area'], 'ym', 0)
+        df_new = fill_ym_numpy(df, ['idx', 'area'], 'ym', fill_value)
     else:
         raise NotImplementedError
 
@@ -61,4 +62,4 @@ if __name__ == '__main__':
 
     df = pd.DataFrame(dict(idx=idx, area=area, ym=ym, data=data))
     print(df)
-    print(fill_ym(df, ['idx', 'area'], 'ym', 'pandas', 0))
+    print(fill_ym(df, ['idx', 'area'], 'ym', 'pandas', {'data': 0}))
