@@ -3,10 +3,13 @@ import pandas as pd
 from tqdm import tqdm
 
 
-def fill_ym_pandas(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_value=None) -> pd.DataFrame:
+def fill_ym_pandas(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_value={}) -> pd.DataFrame:
     df_new = df.sort_values([*unique_columns, ym_column])
     df_new[ym_column] = pd.to_datetime(df_new[ym_column])
     df_new.set_index(ym_column, inplace=True)
+    flag_column = 'Filled'
+    df_new[flag_column] = 0
+    fill_value[flag_column] = 1
 
     n_unique_columns = len(unique_columns)
     if n_unique_columns == 2:
@@ -17,9 +20,10 @@ def fill_ym_pandas(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_
             df_uc0 = df_new[uc0_array == uc0]
             uc1_array = df_uc0[unique_columns[1]].values
             uc1_unique = df_uc0[unique_columns[1]].unique()
-            df_list.append(pd.concat([df_uc0[uc1_array == uc1].asfreq('MS', fill_value=fill_value) for uc1 in uc1_unique]))
-        df_flag = pd.DataFrame(dict(Filled=np.zeros(len(df_new))), index=df_new.index)
-        df_new = pd.concat(df_list).join(df_flag, how='left').fillna({'Filled': 1}).astype({'Filled': int})
+            df_list.append(pd.concat([df_uc0[uc1_array == uc1].asfreq('MS') for uc1 in uc1_unique]))
+        df_new = pd.concat(df_list)
+        df_new.fillna(fill_value, inplace=True)
+        df_new = df_new.astype({'Filled': int})
         df_new.reset_index(inplace=True)
         df_new[ym_column] = df_new[ym_column].map(lambda x: '-'.join(str(x).split('-')[:2]))
 
