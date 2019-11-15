@@ -7,5 +7,7 @@
   
 + process_feature  
   特徴量加工
-  - sin_cos()  
+
++ optuna
+  ハイパラチューニング
   
