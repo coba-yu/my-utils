@@ -1,8 +1,9 @@
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
 
-def fill_ym(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_value=None) -> pd.DataFrame:
+def fill_ym_pandas(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_value=None) -> pd.DataFrame:
     df_new = df.sort_values([*unique_columns, ym_column])
     df_new[ym_column] = pd.to_datetime(df_new[ym_column])
     df_new.set_index(ym_column, inplace=True)
@@ -19,8 +20,26 @@ def fill_ym(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_value=N
             print(df_uc0)
             print(uc1_unique)
             df_list.append(pd.concat([df_uc0[uc1_array == uc1].asfreq('MS', fill_value=fill_value) for uc1 in uc1_unique]))
-        df_new = pd.concat(df_list)
+        df_flag = pd.DataFrame(dict(Filled=np.zeros(len(df_new))), index=df_new.index)
+        df_new = pd.concat(df_list).join(df_flag, how='left').fillna({'Filled': 1}).astype({'Filled': int})
+        df_new.reset_index(inplace=True)
+        df_new[ym_column] = df_new[ym_column].map(lambda x: '-'.join(str(x).split('-')[:2]))
 
+    else:
+        raise NotImplementedError
+
+    return df_new
+
+
+def fill_ym_numpy(df: pd.DataFrame, unique_columns: list, ym_column: str, fill_value=None) -> pd.DataFrame:
+    raise NotImplementedError
+
+
+def fill_ym(df: pd.DataFrame, unique_columns: list, ym_column: str, base: str, fill_value=None) -> pd.DataFrame:
+    if base == 'pandas':
+        df_new = fill_ym_pandas(df, ['idx', 'area'], 'ym', 0)
+    elif base == 'numpy':
+        df_new = fill_ym_numpy(df, ['idx', 'area'], 'ym', 0)
     else:
         raise NotImplementedError
 
@@ -41,4 +60,4 @@ if __name__ == '__main__':
 
     df = pd.DataFrame(dict(idx=idx, area=area, ym=ym, data=data))
     print(df)
-    print(fill_ym(df, ['idx', 'area'], 'ym', 0))
+    print(fill_ym(df, ['idx', 'area'], 'ym', 'pandas', 0))
