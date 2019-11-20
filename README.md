@@ -8,6 +8,6 @@
 + process_feature  
   特徴量加工
 
-+ optuna
++ optuna_lgbm  
   ハイパラチューニング
   
