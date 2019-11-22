@@ -2,7 +2,7 @@ import optuna
 import xgboost as xgb
 from sklearn.metrics import mean_squared_error
 
-def xgboost_optuna(X_train, y_train, X_test, y_test):
+def optuna_xgboost(X_train, y_train, X_test, y_test):
     dtrain = xgb.DMatrix(X_train.drop(['AC', 'Dept'], axis=1), label=y_train_all)
     dtest = xgb.DMatrix(X_test.drop(['AC', 'Dept'], axis=1), label=y_test)
     evallist = [(dtest, 'eval'), (dtrain, 'train')]
@@ -32,4 +32,4 @@ def xgboost_optuna(X_train, y_train, X_test, y_test):
     study.optimize(objective, n_trials=100)  # Invoke optimization of the objective function. 
     print(study.best_params)
     
-xgboost_optuna(X_train_all, y_train_all, X_test, y_test)
+optuna_xgboost(X_train_all, y_train_all, X_test, y_test)
